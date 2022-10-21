@@ -15,7 +15,13 @@ This Repo contains code for TeamPtolemy's solution to Map Georeferencing Challen
 
 ## Installation
 
-In stall the required packages through `pip install`:
+Clone the repository and go to the root directory:
+```
+git clone https://github.com/ljmzlh/TeamPtolemy.git
+cd TeamPtolemy/
+```
+
+Install the required packages through `pip install`:
 ```
 pip install -r requirements.txt
 ```
@@ -25,46 +31,41 @@ pip install -r requirements.txt
 
 
 ## Model Running
-Go to the under directory `code`:
-```
-cd code/
-```
-
-The running command is as following:
-```
-python run.py --dataset DATASET --mode MODE --data
-_size LABLE_SIZE [--pretrained_path PRETRAINED_PATH]
-```
-`DATASET` describes the dataset, which should be among `[wisdm,rwhar,hhar,ecg]`. `MODE` describes the running mode, which should be among `[pretrain,train,finetune]`. `LABLE_SIZE` describes the size of labels used in training stage, which should be among `[full,few]`. `PRETRAINED_PATH` is requried when `MODE=finetune`; it indicates the path to pretrained checkpoint to start with.
-
 
 
 ### Amazon OCR
 
-To perform full-label training, set `MODE` to `train` and `LABLE_SIZE` to `full`. For example, the command of full-label training on dataset WISDM is:
+First, slice the images into smaller patches:
 ```
 python amazon/slice.py --tif_path TIF_PATH --s3_path S3_PATH
 ```
 
+Then, call Amazon Textract to perform OCR on the sliced smaller patches:
 ```
 python amazon/run.py --tif_path TIF_PATH
 ```
 
+`TIF_PATH` is the path to the directory containing tif files. `S3_PATH` is the path to your S3 storage bucket.
 
 ### Pytesseract OCR
 
-To perform self-superviesed pretraining, set `MODE` to `pretrain`. For example, the command of full-label training on dataset WISDM is:
+Call Pytesseract OCR Model to perform OCR on the images:
 ```
 python pytesseract/run.py --tif_path TIF_PATH
 ```
+`TIF_PATH` is the path to the directory containing tif files.
 
 
 ### Ensemble Georeferencing
 
+Ensemble and filter the coordinates captured by all the OCR models, build coordinate system and generate answers for target points:
 ```
 python ensemble/get_ans.py --csv_path CSV_PATH --clue_path CLUE_PATH
 ```
 
+Aggregate all the answers into one CSV file:
 ```
 python ensemble/aggre.py 
 ```
+`CSV_PATH` is the path to the directory containing target CSV files.
+`CLUE_PATH` is the path to the directory containing clue CSV files.
